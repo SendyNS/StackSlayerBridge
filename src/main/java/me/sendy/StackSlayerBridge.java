@@ -65,7 +65,7 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer container = meta.getPersistentDataContainer();
 
-        NamespacedKey key = new NamespacedKey("superenchant", "stackslayer");
+        NamespacedKey key = new NamespacedKey("superenchants", "stackslayer");
         return container.has(key, PersistentDataType.INTEGER);
     }
 }
