@@ -59,13 +59,25 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
             e.printStackTrace();
         }
     }
-
+        
     private boolean hasStackSlayerEnchant(ItemStack item) {
         if (!item.hasItemMeta()) return false;
+    
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer container = meta.getPersistentDataContainer();
-
-        NamespacedKey key = new NamespacedKey("superenchants", "stackslayer");
-        return container.has(key, PersistentDataType.INTEGER);
+    
+        NamespacedKey enchantsKey = new NamespacedKey("superenchants", "enchantments");
+    
+        if (!container.has(enchantsKey, PersistentDataType.TAG_CONTAINER))
+            return false;
+    
+        PersistentDataContainer enchantsContainer =
+                container.get(enchantsKey, PersistentDataType.TAG_CONTAINER);
+    
+        if (enchantsContainer == null)
+            return false;
+    
+        NamespacedKey stackSlayerKey = new NamespacedKey("superenchants", "stackslayer");
+    
+        return enchantsContainer.has(stackSlayerKey, PersistentDataType.INTEGER);
     }
-}
