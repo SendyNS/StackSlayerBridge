@@ -81,3 +81,4 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
     
         return enchantsContainer.has(stackSlayerKey, PersistentDataType.INTEGER);
     }
+}
