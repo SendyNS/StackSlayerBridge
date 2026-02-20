@@ -1,0 +1,5 @@
+name: StackSlayerBridge
+version: 1.0
+main: me.sendy.StackSlayerBridge
+api-version: 1.21
+depend: [RoseStacker]
