@@ -23,43 +23,45 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onEntityDeath(EntityDeathEvent event) {
+public void onEntityDeath(EntityDeathEvent event) {
 
-        LivingEntity entity = event.getEntity();
+    LivingEntity entity = event.getEntity();
 
-        if (!(entity.getKiller() instanceof Player player))
+    if (!(entity.getKiller() instanceof Player))
+        return;
+
+    Player player = entity.getKiller();
+
+    ItemStack item = player.getInventory().getItemInMainHand();
+    if (item.getType() == Material.AIR)
+        return;
+
+    if (!hasStackSlayerLore(item))
+        return;
+
+    Plugin roseStacker = Bukkit.getPluginManager().getPlugin("RoseStacker");
+    if (roseStacker == null)
+        return;
+
+    try {
+        Class<?> apiClass = Class.forName("dev.rosewood.rosestacker.api.RoseStackerAPI");
+        Method getInstance = apiClass.getMethod("getInstance");
+        Object api = getInstance.invoke(null);
+
+        Method getStackedEntity = apiClass.getMethod("getStackedEntity", LivingEntity.class);
+        Object stackedEntity = getStackedEntity.invoke(api, entity);
+
+        if (stackedEntity == null)
             return;
 
-        ItemStack item = player.getInventory().getItemInMainHand();
-        if (item.getType() == Material.AIR)
-            return;
+        Method killEntireStack = stackedEntity.getClass().getMethod("killEntireStack");
+        killEntireStack.invoke(stackedEntity);
 
-        if (!hasStackSlayerLore(item))
-            return;
-
-        Plugin roseStacker = Bukkit.getPluginManager().getPlugin("RoseStacker");
-        if (roseStacker == null)
-            return;
-
-        try {
-            Class<?> apiClass = Class.forName("dev.rosewood.rosestacker.api.RoseStackerAPI");
-            Method getInstance = apiClass.getMethod("getInstance");
-            Object api = getInstance.invoke(null);
-
-            Method getStackedEntity = apiClass.getMethod("getStackedEntity", LivingEntity.class);
-            Object stackedEntity = getStackedEntity.invoke(api, entity);
-
-            if (stackedEntity == null)
-                return;
-
-            Method killEntireStack = stackedEntity.getClass().getMethod("killEntireStack");
-            killEntireStack.invoke(stackedEntity);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    } catch (Exception e) {
+        e.printStackTrace();
     }
-
+}
+    
     private boolean hasStackSlayerLore(ItemStack item) {
         if (!item.hasItemMeta())
             return false;
