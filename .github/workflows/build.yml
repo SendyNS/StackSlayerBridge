@@ -1,8 +1,9 @@
-name: Build
+name: Build StackSlayerBridge
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
 
 jobs:
   build:
@@ -12,13 +13,23 @@ jobs:
       - name: Checkout StackSlayerBridge
         uses: actions/checkout@v4
 
-      - name: Clone UJobs
-        run: git clone https://github.com/SendyNS/UJobs.git
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
 
+      # 1️⃣ Clone UJobs
+      - name: Clone UJobs
+        run: git clone https://github.com/YOUR_USERNAME/UJobs.git
+
+      # 2️⃣ Build & Install UJobs into local Maven repo
       - name: Build & Install UJobs
         run: |
           cd UJobs
           mvn clean install -DskipTests
 
+      # 3️⃣ Build StackSlayerBridge
       - name: Build StackSlayerBridge
         run: mvn clean package -DskipTests
