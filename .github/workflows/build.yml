@@ -22,7 +22,7 @@ jobs:
 
       # 1️⃣ Clone UJobs
       - name: Clone UJobs
-        run: git clone https://github.com/YOUR_USERNAME/UJobs.git
+        run: git clone https://github.com/SendyNS/UJobs.git
 
       # 2️⃣ Build & Install UJobs into local Maven repo
       - name: Build & Install UJobs
