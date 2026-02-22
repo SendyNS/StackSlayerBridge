@@ -47,38 +47,50 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
     
         Plugin roseStacker = Bukkit.getPluginManager().getPlugin("RoseStacker");
         if (roseStacker == null) return;
-    
-        try {
-            Class<?> apiClass = Class.forName("dev.rosewood.rosestacker.api.RoseStackerAPI");
-            Object api = apiClass.getMethod("getInstance").invoke(null);
-    
-            Object stackedEntity = apiClass
+            try {
+        
+            // Get RoseStacker main plugin instance
+            Class<?> roseStackerClass = Class.forName("dev.rosewood.rosestacker.RoseStacker");
+            Object roseStackerInstance = roseStackerClass
+                    .getMethod("getInstance")
+                    .invoke(null);
+        
+            // Get StackManager class
+            Class<?> stackManagerClass = Class.forName("dev.rosewood.rosestacker.manager.StackManager");
+        
+            // Call getManager(StackManager.class)
+            Object stackManager = roseStackerClass
+                    .getMethod("getManager", Class.class)
+                    .invoke(roseStackerInstance, stackManagerClass);
+        
+            // Now call getStackedEntity(LivingEntity)
+            Object stackedEntity = stackManagerClass
                     .getMethod("getStackedEntity", LivingEntity.class)
-                    .invoke(api, entity);
-    
+                    .invoke(stackManager, entity);
+        
             if (stackedEntity == null) {
-                getLogger().info("stackedEntity does not exist (damage)");
+                getLogger().info("stackedEntity does not exist (manager)");
                 return;
             }
-    
+        
             int stackSize = (int) stackedEntity
                     .getClass()
                     .getMethod("getStackSize")
                     .invoke(stackedEntity);
-    
-            getLogger().info("Stacked entity size (damage): " + stackSize);
-    
+        
+            getLogger().info("Stack size: " + stackSize);
+        
             if (stackSize <= 1) return;
-    
+        
             int extraKills = stackSize - 1;
-    
+        
             awardUJobsKills(player, entity, extraKills);
-    
+        
             stackedEntity
                     .getClass()
                     .getMethod("killEntireStack")
                     .invoke(stackedEntity);
-    
+        
         } catch (Exception e) {
             e.printStackTrace();
         }
