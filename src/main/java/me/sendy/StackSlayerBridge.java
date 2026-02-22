@@ -54,13 +54,19 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
                     .getMethod("getStackedEntity", LivingEntity.class)
                     .invoke(api, entity);
     
-            if (stackedEntity == null) return;
+            if (stackedEntity == null)
+            {
+                getLogger().info("stackedEntity does not exist");
+                return;
+            }
     
             int stackSize = (int) stackedEntity
                     .getClass()
                     .getMethod("getStackSize")
                     .invoke(stackedEntity);
-    
+
+            getLogger().info("Stacked entity size:" + stackSize);
+            
             if (stackSize <= 1) return;
     
             // 1 death already counted by Bukkit
@@ -97,7 +103,7 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
             return false;
     
         NamespacedKey stackSlayerKey = new NamespacedKey("superenchants", "stackslayer");
-    
+        getLogger().info("player has stackslayer enchant");
         return enchantsContainer.has(stackSlayerKey, PersistentDataType.INTEGER);
     }
     
