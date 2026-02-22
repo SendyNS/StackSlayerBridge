@@ -31,17 +31,19 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
         getLogger().info("StackSlayerBridge enabled!");
     }
+    
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onEntityDeath(EntityDeathEvent event) {
+    public void onDamage(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
     
-        LivingEntity entity = event.getEntity();
-    
-        if (!(entity.getKiller() instanceof Player player)) return;
+        if (!(event.getDamager() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
     
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getType() == Material.AIR) return;
-    
         if (!hasStackSlayerEnchant(item)) return;
+    
+        // Only run if this hit will kill the mob
+        if (event.getFinalDamage() < entity.getHealth()) return;
     
         Plugin roseStacker = Bukkit.getPluginManager().getPlugin("RoseStacker");
         if (roseStacker == null) return;
@@ -54,9 +56,8 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
                     .getMethod("getStackedEntity", LivingEntity.class)
                     .invoke(api, entity);
     
-            if (stackedEntity == null)
-            {
-                getLogger().info("stackedEntity does not exist");
+            if (stackedEntity == null) {
+                getLogger().info("stackedEntity does not exist (damage)");
                 return;
             }
     
@@ -64,17 +65,15 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
                     .getClass()
                     .getMethod("getStackSize")
                     .invoke(stackedEntity);
-
-            getLogger().info("Stacked entity size:" + stackSize);
-            
+    
+            getLogger().info("Stacked entity size (damage): " + stackSize);
+    
             if (stackSize <= 1) return;
     
-            // 1 death already counted by Bukkit
             int extraKills = stackSize - 1;
     
             awardUJobsKills(player, entity, extraKills);
     
-            // Now wipe remaining stack
             stackedEntity
                     .getClass()
                     .getMethod("killEntireStack")
@@ -83,8 +82,8 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-            
+    }   
+    
     private boolean hasStackSlayerEnchant(ItemStack item) {
         if (!item.hasItemMeta()) return false;
     
