@@ -24,42 +24,54 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
         getLogger().info("StackSlayerBridge enabled!");
     }
-
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
-
+    
         LivingEntity entity = event.getEntity();
-
-        if (!(entity.getKiller() instanceof Player)) return;
-
-        Player player = entity.getKiller();
-
+    
+        if (!(entity.getKiller() instanceof Player player)) return;
+    
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getType() == Material.AIR) return;
-
+    
         if (!hasStackSlayerEnchant(item)) return;
-
+    
         Plugin roseStacker = Bukkit.getPluginManager().getPlugin("RoseStacker");
         if (roseStacker == null) return;
-
+    
         try {
             Class<?> apiClass = Class.forName("dev.rosewood.rosestacker.api.RoseStackerAPI");
-            Method getInstance = apiClass.getMethod("getInstance");
-            Object api = getInstance.invoke(null);
-
-            Method getStackedEntity = apiClass.getMethod("getStackedEntity", LivingEntity.class);
-            Object stackedEntity = getStackedEntity.invoke(api, entity);
-
+            Object api = apiClass.getMethod("getInstance").invoke(null);
+    
+            Object stackedEntity = apiClass
+                    .getMethod("getStackedEntity", LivingEntity.class)
+                    .invoke(api, entity);
+    
             if (stackedEntity == null) return;
-
-            Method killEntireStack = stackedEntity.getClass().getMethod("killEntireStack");
-            killEntireStack.invoke(stackedEntity);
-
+    
+            int stackSize = (int) stackedEntity
+                    .getClass()
+                    .getMethod("getStackSize")
+                    .invoke(stackedEntity);
+    
+            if (stackSize <= 1) return;
+    
+            // 1 death already counted by Bukkit
+            int extraKills = stackSize - 1;
+    
+            awardUJobsKills(player, entity, extraKills);
+    
+            // Now wipe remaining stack
+            stackedEntity
+                    .getClass()
+                    .getMethod("killEntireStack")
+                    .invoke(stackedEntity);
+    
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-        
+            
     private boolean hasStackSlayerEnchant(ItemStack item) {
         if (!item.hasItemMeta()) return false;
     
@@ -81,4 +93,36 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
     
         return enchantsContainer.has(stackSlayerKey, PersistentDataType.INTEGER);
     }
+    
+        private void awardUJobsKills(Player player, LivingEntity entity, int amount) {
+    
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("UJobs");
+        if (plugin == null) return;
+    
+        try {
+            // Cast safely
+            me.usainsrht.ujobs.UJobsPlugin ujobs =
+                    (me.usainsrht.ujobs.UJobsPlugin) plugin;
+    
+            JobManager jobManager = ujobs.getJobManager();
+    
+            if (jobManager.shouldIgnore(player)) return;
+    
+            Action killAction = BuiltInActions.Entity.KILL;
+    
+            for (Job job : jobManager.getJobsWithAction(killAction)) {
+                jobManager.processAction(
+                        player,
+                        killAction,
+                        entity.getType().name(),
+                        job,
+                        amount
+                );
+            }
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
 }
