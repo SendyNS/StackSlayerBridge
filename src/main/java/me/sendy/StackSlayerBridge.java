@@ -31,7 +31,7 @@ public class StackSlayerBridge extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
         getLogger().info("StackSlayerBridge enabled!");
     }
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
     
         LivingEntity entity = event.getEntity();
