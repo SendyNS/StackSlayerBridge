@@ -14,6 +14,13 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.EventPriority;
+
+import me.usainsrht.ujobs.UJobsPlugin;
+import me.usainsrht.ujobs.managers.JobManager;
+import me.usainsrht.ujobs.models.Action;
+import me.usainsrht.ujobs.models.BuiltInActions;
+import me.usainsrht.ujobs.models.Job;
 
 import java.lang.reflect.Method;
 
