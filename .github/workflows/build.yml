@@ -33,3 +33,10 @@ jobs:
       # 3️⃣ Build StackSlayerBridge
       - name: Build StackSlayerBridge
         run: mvn clean package -DskipTests
+
+              # 4️⃣ Upload built jar as artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StackSlayerBridge
+          path: target/*.jar
